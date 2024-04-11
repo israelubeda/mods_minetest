@@ -76,6 +76,24 @@ local function construir_casa(pos)
         end
     end
 
+    -- Colocar la puerta, asumiendo que queremos que esté en el centro de una de las paredes
+    local pos_puerta = {x = pos.x + ancho / 2, y = pos.y + 1, z = pos.z}  -- Ajustar según la orientación de la casa
+    -- Eliminar los bloques donde irá la puerta
+    minetest.set_node(pos_puerta, {name = "air"})
+    minetest.set_node({x = pos_puerta.x, y = pos_puerta.y + 1, z = pos_puerta.z}, {name = "air"})
+
+    -- Colocar la puerta
+    -- La puerta ocupa dos nodos; este es el nodo inferior
+    minetest.set_node(pos_puerta, {name = "mcl_doors:wooden_door_b_1"})
+
+    -- Para la parte superior de la puerta, debes usar el nodo correspondiente (generalmente algo como wooden_door_t_1)
+    -- La documentación o el examen del código del mod te puede dar el nombre exacto
+    minetest.set_node({x = pos_puerta.x, y = pos_puerta.y + 1, z = pos_puerta.z}, {name = "mcl_doors:wooden_door_t_1"})
+		
+
+
+
+
     -- Construir el techo
     for dx = -1, ancho do
         for dz = -1, largo do
@@ -88,7 +106,7 @@ end
 -- Coordenadas donde quieres que la casa sea construida
 local pos_casa = {x = 108.3, y = 5, z = 149.3}
 
--- Registrar el comando para construir la casa
+--0 Registrar el comando para construir la casa
 minetest.register_chatcommand("construir_casa", {
     description = "Construye una casa en las coordenadas especificadas",
     func = function(name, param)
@@ -97,3 +115,24 @@ minetest.register_chatcommand("construir_casa", {
     end,
 })
 
+minetest.register_chatcommand("casa", {
+    params = "<x> <y> <z>", -- Indica que el comando requiere tres parámetros
+    description = "Construye una casa en las coordenadas especificadas (x y z)",
+    func = function(name, param)
+        -- Partir el parámetro de entrada en un array de coordenadas
+        local args = param:split(" ")
+        -- Verificar que se hayan ingresado tres coordenadas
+        if #args < 3 then
+            return false, "Por favor, especifica tres coordenadas: /casa x y z"
+        end
+        -- Convertir las coordenadas de cadena a número
+        local pos = {x = tonumber(args[1]), y = tonumber(args[2]), z = tonumber(args[3])}
+        -- Verificar que se hayan ingresado valores válidos
+        if not pos.x or not pos.y or not pos.z then
+            return false, "Coordenadas inválidas. Asegúrate de que son números."
+        end
+        -- Construir la casa en la posición especificada
+        construir_casa(pos)
+        return true, "Casa construida en la posición (".. pos.x ..",".. pos.y ..",".. pos.z ..")"
+    end,
+})
